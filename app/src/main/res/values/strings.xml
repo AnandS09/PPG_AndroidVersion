@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">MyOpenCV_try1</string>
+    <string name="Title">My Open Cv App</string>
+    <string name="Data1">Data1 : Value</string>
+    <string name="Data2">Data2 : Value</string>
+    <string name="Data3">Data3 : Value</string>
+    <string name="Data4">Data4 : Value</string>
+</resources>
