@@ -1,6 +1,7 @@
 package com.myapps.myopencv_try1;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.os.Looper;
 import android.os.Message;
@@ -16,7 +17,13 @@ import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 
 public class MainActivity extends Activity implements CvCameraViewListener2 {
@@ -39,6 +46,11 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
     private int image_processed;
     private boolean first_fft_run;
     private boolean start_fft;
+    private boolean keep_thread_running;
+
+    private File dataPointsFile;
+    private File fftOutFile;
+    private FileOutputStream fileWriter;
 
     private int FPS;
     private long BPM;
@@ -112,6 +124,7 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
         fftPoints = 1024;
         image_processed = 0;
         first_fft_run = true;
+        keep_thread_running = true;
         FPS = 30;
         BPM = 0;
 
@@ -123,8 +136,26 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
         //Can't have it here since the camera is not yet accessible to OpenCV
         //mOpenCvCameraView.setFrameRate(25000, 25000);           //We are trying to get 25FPS constant rate
 
+        Log.d(TAG, "Calling file operations");
+        //myFileSetup();
+
         myThread.start();
         myFFTThread.start();
+    }
+
+    public void myFileSetup(){
+        dataPointsFile = new File("/sdcard/data/", "dataPoints.csv");
+        fftOutFile = new File("/sdcard/data/", "fftOut.csv");
+        try {
+            dataPointsFile.createNewFile();
+            fftOutFile.createNewFile();
+
+            Log.d("Data points path = ", dataPointsFile.getAbsolutePath());
+            Log.d("FFT points path = ",fftOutFile.getAbsolutePath());
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -143,6 +174,7 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
     @Override
     public void onPause()
     {
+        keep_thread_running = false;
         super.onPause();
         mOpenCvCameraView.turnFlashOff();
         if (mOpenCvCameraView != null)
@@ -264,7 +296,7 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
             int image_got_local = -1;
             mOpenCvCameraView.turnFlashOn();
             mOpenCvCameraView.setFrameRate(30000, 30000);           //We are trying to get 30FPS constant rate
-            while(true){
+            while(keep_thread_running){
 
                 //We will wait till a new frame is received
                 while(image_got_local == appData.image_got){
@@ -298,7 +330,7 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
     Thread myFFTThread = new Thread(){
         @Override
         public void run(){
-            while(true){
+            while(keep_thread_running){
                 if (start_fft == false){
 
                     //Sleeping part may lead to timing problems
@@ -316,36 +348,49 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
                     start_fft = false;
 
                     double[][] sample_arr = new double[fftPoints][2];
+                    double[]   input_arr = new double[fftPoints];
                     double[] freq_arr = new double[fftPoints];
                     fftLib f = new fftLib();
                     sample_arr = dataQ.toArray(startPointer, endPointer);
+                    input_arr = dataQ.toArray(startPointer, endPointer, 0);
 
                     freq_arr = f.fft_energy_squared(sample_arr, fftPoints);
 
-                    //Apply a filter
-                    int deno = (int) (2 * FPS);
-                    //int n_min = fftPoints / deno;       //start of the filter window
-                    //int n_max = 6 * n_min;              //end of the filter window
 
-                    //double max = freq_arr[n_min];
-                    double max = freq_arr[1];
-                    //int pos = n_min;
-                    int pos = 1;
-//                    for (int i = n_min + 1; i <= n_max; i++) {
-//                        if (freq_arr[i] > max) {
-//                            max = freq_arr[i];
-//                            pos = i;
-//                        }
+                    Log.d("FFT OUT : ",Arrays.toString(freq_arr));
+                    Log.d("Data points : ", Arrays.toString(input_arr));
+//                    try {
+//                        fileWriter = openFileOutput("fftOut.csv",MODE_APPEND|MODE_WORLD_READABLE);
+//                        fileWriter.write(Arrays.toString(freq_arr).getBytes());
+//                        fileWriter.close();
+//                        Log.d(TAG, getFileStreamPath("fftout.csv").toString());
+//
+//                        fileWriter = openFileOutput("dataPoints.csv",MODE_APPEND|MODE_WORLD_READABLE);
+//                        fileWriter.write(Arrays.toString(sample_arr).getBytes());
+//                        fileWriter.close();
+//                    } catch (Exception e) {
+//                        e.printStackTrace();
 //                    }
-                    for(int i =1; i < fftPoints; i++){
+
+
+                    double factor = fftPoints / FPS;          // (N / Fs)
+                    double nMinFactor = 0.75;                 // The frequency corresponding to 45bpm
+                    double nMaxFactor = 2.5;                  // The frequency corresponding to 150bpm
+
+                    int nMin = (int) Math.floor(nMinFactor * factor);
+                    int nMax = (int) Math.ceil(nMaxFactor * factor);
+
+                    double max = freq_arr[nMin];
+                    int pos = nMin;
+                    for(int i =nMin; i <= nMax; i++){
                         if (freq_arr[i] > max) {
                             max = freq_arr[i];
                             pos = i;
                         }
                     }
 
-                    double bps = (pos * FPS) / fftPoints;    //Calculate the freq
-                    double bpm = (double) 60.0 * bps;        //Calculate bpm
+                    double bps = pos / factor;      //Calculate the freq
+                    double bpm = 60.0 * bps;        //Calculate bpm
                     BPM = Math.round(bpm);
                     Log.d(TAG+" FFT Thread", "MAX = " + max + " pos = " + pos);
                 }
