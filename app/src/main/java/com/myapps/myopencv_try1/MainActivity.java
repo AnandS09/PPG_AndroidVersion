@@ -24,6 +24,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Stack;
 
 
 public class MainActivity extends Activity implements CvCameraViewListener2 {
@@ -46,6 +47,7 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
     private int image_processed;
     private boolean first_fft_run;
     private boolean start_fft;
+    private boolean init_frames_discard;
     private boolean keep_thread_running;
 
     private File dataPointsFile;
@@ -58,6 +60,8 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
     private android.os.Handler mHandler;
 
     private int bad_frame_count;
+
+    private Stack<Long> timestampQ;
 
     // Loader callback to connect with OpenCV manager
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
@@ -125,8 +129,11 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
         image_processed = 0;
         first_fft_run = true;
         keep_thread_running = true;
+        init_frames_discard = false;
         FPS = 30;
         BPM = 0;
+
+        timestampQ = new Stack<Long>();
 
         //Connect to the camera view and prepare it
         mOpenCvCameraView = (javaViewCameraControl)findViewById(R.id.HelloOpenCvView);
@@ -200,6 +207,7 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
 
         appData.image_got++;
         myInputFrame = inputFrame.rgba();
+        timestampQ.push((Long)System.currentTimeMillis());
         return myInputFrame;
     }
 
@@ -241,13 +249,11 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
         switch (state){
             case 0:
                 bad_frame_count = 0;
-                endPointer++;
                 image_processed++;
                 dataQ.Qpush(queueData);
                 break;
             case 1:
                 ++bad_frame_count;
-                endPointer++;
                 image_processed++;
                 dataQ.Qpush(queueData);
 
@@ -259,9 +265,20 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
                 Log.e(TAG,"ERROR : UNKNOWN STATE");
         }
 
+        //Discard first 30 frames as they might contain junk data
+        //Reset pointers to new initial conditions
+        if((!init_frames_discard) && (image_processed >= 30)) {
+            startPointer = 30;
+            endPointer = 30;
+            image_processed = 0;
+            init_frames_discard = true;
+            Log.d(TAG + " My Thread","Discarded first 30 frames");
+        }
+
         //Triggering for FFT
         if(first_fft_run){
             if(image_processed >= 1024) {
+                endPointer = endPointer + image_processed - 1;
                 start_fft = true;
                 Log.d(TAG + " My Thread","Start FFT set");
                 first_fft_run = false;
@@ -269,9 +286,12 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
             }
         } else {
             if(image_processed >= 128){
+                startPointer = startPointer  + image_processed;
+                endPointer = endPointer + image_processed;
+
                 start_fft = true;
                 Log.d(TAG +" My Thread","Start FFT set");
-                startPointer = startPointer  + 128;
+
                 image_processed = 0;
             }
         }
@@ -351,8 +371,16 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
                     double[]   input_arr = new double[fftPoints];
                     double[] freq_arr = new double[fftPoints];
                     fftLib f = new fftLib();
+
+                    Log.d(TAG,"StartPointer = " + startPointer + " EndPointer = " + endPointer);
                     sample_arr = dataQ.toArray(startPointer, endPointer);
                     input_arr = dataQ.toArray(startPointer, endPointer, 0);
+
+                    long timeStart  = timestampQ.get(startPointer);
+                    long timeEnd    = timestampQ.get(endPointer);
+
+                    FPS =  (fftPoints * 1000)/ (int)(timeEnd - timeStart) ;
+                    Log.d(TAG,"FPS Calculated = " + FPS);
 
                     freq_arr = f.fft_energy_squared(sample_arr, fftPoints);
 

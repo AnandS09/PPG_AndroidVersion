@@ -54,29 +54,29 @@ public class DoubleTwoDimQueue {
     }
 
     public double [][] toArray(int start, int end){
-        int size = end - start;
+        int size = end - start + 1;
         double [][] arr =new double[size][2];
 
-        for(int i = start; i < size; i++){
+        for(int i = start, j =0; i <= end; i++, j++){
             double [][] peek = new double[1][2];
             peek = queue.get(i);
 
-            arr[i][0] = peek[0][0];
-            arr[i][1] = peek[0][1];
+            arr[j][0] = peek[0][0];
+            arr[j][1] = peek[0][1];
         }
 
         return arr;
     }
 
     public double [] toArray(int start, int end, int index){
-        int size = end - start;
+        int size = end - start + 1;
         double [] arr =new double[size];
 
-        for(int i = start; i < size; i++){
+        for(int i = start, j =0; i <= end ; i++, j++){
             double [][] peek = new double[1][2];
             peek = queue.get(i);
 
-            arr[i] = peek[0][index];
+            arr[j] = peek[0][index];
 
         }
 
