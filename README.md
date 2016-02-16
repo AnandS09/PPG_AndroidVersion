@@ -20,7 +20,7 @@ This Android app will measure the heartbeat in beats per minute of the user usin
 
 <b> Using the app </b> <br>
 <ol>
-  <li><i> When the launch the app for the first time you might get a prompt asking you to install OpenCV manager if the same is not installed on your phone. Please click yes and install the same. OpenCV manager is a required dependency for this app.</i></li>
+  <li><i> When you launch the app for the first time you might get a prompt asking you to install OpenCV manager if the same is not installed already on your phone. Please click yes and install the same. <a href="https://play.google.com/store/apps/details?id=org.opencv.engine&hl=en">OpenCV manager</a> is a required dependency for this app.</i></li>
   <li>Gently place your finger on your camera lens and start the app. Once the flashlight turns on you should see a complete red preview on the UI. <i>(If your finger is not correctly placed the app might produce errors)</i></li>
   <li> Wait till the text colour of the BPM value changes to green </li>
 </ol>
