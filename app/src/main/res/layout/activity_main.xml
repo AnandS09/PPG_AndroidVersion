@@ -15,15 +15,16 @@
         android:layout_height="wrap_content"
         android:text="@string/Title"
         android:id="@+id/title"
+        android:textSize="20dp"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         />
 
     <RelativeLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
         android:layout_below="@id/title"
-        android:layout_marginTop="50dp"
+        android:layout_marginTop="20dp"
         android:layout_centerHorizontal="true"
         android:id="@+id/layout_camera_preview"
         >
@@ -43,38 +44,71 @@
         android:layout_height="wrap_content"
         android:text="@string/Data1"
         android:id="@+id/data1"
-        android:layout_below="@id/layout_camera_preview"
-        android:layout_marginTop="50dp"
         android:layout_marginLeft="20dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentBottom="true"
         />
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/Data2"
         android:id="@+id/data2"
-        android:layout_below="@id/data1"
-        android:layout_marginTop="20dp"
         android:layout_marginLeft="20dp"
+        android:layout_centerHorizontal="true"
+        android:layout_alignBaseline="@+id/data1"
         />
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/Data3"
         android:id="@+id/data3"
-        android:layout_below="@id/data2"
-        android:layout_marginTop="20dp"
-        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_alignParentRight="true"
+        android:layout_alignBaseline="@+id/data2"
         />
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/Data4"
+        android:textSize="50dp"
         android:id="@+id/data4"
-        android:layout_below="@id/data3"
-        android:layout_marginTop="20dp"
-        android:layout_marginLeft="20dp"
+        android:layout_below="@id/layout_camera_preview"
+        android:layout_marginTop="10dp"
+        android:layout_centerHorizontal="true"
         />
 
-
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/Data1"
+        android:textStyle="bold"
+        android:textSize="15dp"
+        android:id="@+id/data1_head"
+        android:layout_marginLeft="20dp"
+        android:layout_marginBottom="5dp"
+        android:layout_above="@id/data1"
+        />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/Data2"
+        android:textStyle="bold"
+        android:textSize="15dp"
+        android:id="@+id/data2_head"
+        android:layout_marginLeft="20dp"
+        android:layout_centerHorizontal="true"
+        android:layout_alignBaseline="@+id/data1_head"
+        />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/Data3"
+        android:textStyle="bold"
+        android:textSize="15dp"
+        android:id="@+id/data3_head"
+        android:layout_marginRight="19dp"
+        android:layout_alignBaseline="@+id/data2_head"
+        android:layout_alignParentRight="true"
+        />
 
 </RelativeLayout>

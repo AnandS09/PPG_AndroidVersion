@@ -2,6 +2,8 @@ package com.myapps.myopencv_try1;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Looper;
 import android.os.Message;
@@ -56,6 +58,7 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
 
     private int FPS;
     private long BPM;
+    private int state_fft;
 
     private android.os.Handler mHandler;
 
@@ -91,11 +94,20 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
             public void handleMessage(Message inputMessage){
                 UiDataBundle incoming = (UiDataBundle) inputMessage.obj;
 
-                frameNum.setText ("Num  :   " + incoming.image_got);
-                frameSize.setText("Size :   " + incoming.frameSz);
-                frameAvg.setText ("Avg  :   " + incoming.frameAv);
+                frameNum.setText ("" + incoming.image_got);
+                frameSize.setText("" + incoming.frameSz);
+                int avg = (int) Math.round(incoming.frameAv);
+                frameAvg.setText ("" + avg);
                 //imgProcessed.setText("Frames : " + image_processed + " Bad Frames : " + bad_frame_count);
-                imgProcessed.setText("BPM : " + BPM);
+                if(BPM > 0) {
+                    if(fftPoints < 1024){
+                        imgProcessed.setTextColor(Color.rgb(100,100,200));
+                    }
+                    else{
+                        imgProcessed.setTextColor(Color.rgb(100,200,100));
+                    }
+                    imgProcessed.setText("" + BPM);
+                }
             }
 
         };
@@ -132,6 +144,7 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
         init_frames_discard = false;
         FPS = 30;
         BPM = 0;
+        state_fft = 0;
 
         timestampQ = new Stack<Long>();
 
@@ -278,11 +291,31 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
         //Triggering for FFT
         if(first_fft_run){
             if(image_processed >= 1024) {
-                endPointer = endPointer + image_processed - 1;
+                fftPoints = 1024;
+                startPointer = 30;
+                endPointer = 30 + image_processed - 1;
                 start_fft = true;
-                Log.d(TAG + " My Thread","Start FFT set");
+                Log.d(TAG + " My Thread", "Start FFT set");
                 first_fft_run = false;
                 image_processed = 0;
+            }else if((image_processed >= 768) && (image_processed < 512) && (state_fft == 2)){
+                state_fft++;
+                fftPoints = 512;
+                endPointer = 30 + image_processed - 1;
+                start_fft = true;
+                Log.d(TAG + " My Thread","Start FFT set. State = " + state_fft);
+            } else if((image_processed >= 512) && (image_processed < 1024) && (state_fft == 1)){
+                state_fft++;
+                fftPoints = 512;
+                endPointer = 30 + image_processed - 1;
+                start_fft = true;
+                Log.d(TAG + " My Thread","Start FFT set. State = " + state_fft);
+            } else if((image_processed >= 256) && (image_processed < 512) &&(state_fft == 0)){
+                state_fft++;
+                fftPoints = 256;
+                endPointer = 30 + image_processed - 1;
+                start_fft = true;
+                Log.d(TAG + " My Thread","Start FFT set");
             }
         } else {
             if(image_processed >= 128){
