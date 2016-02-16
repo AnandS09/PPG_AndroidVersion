@@ -1,14 +1,29 @@
 # PPG_AndroidVersion
 Android application to demonstrate real time PPG using OpenCV
 
-Since this is an experimental version, please ensure that you have the latest open cv manager installed on your android device.
-Otherwise the app will simply crash. 
-Use this link to download OpenCV Manager : https://play.google.com/store/apps/details?id=org.opencv.engine&hl=en
+<h4>
+This Android app will measure the heartbeat in beats per minute of the user using a smartphone camera. 
+</h4>
+<ul> 
+  <li> Works with android v5.1.1
+  <li> Requires OpenCV Manager preinstalled on device
+</ul>
 
-Once you are all set and ready to fire do the following. 
-1. Launch the app
-2. Keep your finger on the top of the camera lens. Make sure the camera preview is all red, otherwise measurements will suffer due to external noise. 
-3. After roughly 30-40secs you should have a reliable BPM information.
+<b> Steps to install the app. </b> <br>
+<font size="8"><i><b> NOTE:</b> This app is currently for for android lollipop v5.1.1 . I'll add the apks for other versions shortly </i></font>
+<ol>
+  <li> If you are a git user fork this repo. Otherwise you can download the project as a .zip file. </li>
+  <li> Copy the .apk file present in the /apk/ directory into you phone's internal storage / SD card. </li>
+  <li> In your smartphone click on the .apk file to install it. <i> Make sure you have marked "Install apps from SD card" option set, otherwise android will not allow you to install this app. </i> </li>
+  <li> That's it! 
+</ol>
 
-IMPORTANT. The final stage is still WIP so you will not be able to see the BPM. 
-However presently we are showing the frame information live in the app so go ahead and give it a try :)
+<b> Using the app </b> <br>
+<ol>
+  <li><i> When the launch the app for the first time you might get a prompt asking you to install OpenCV manager if the same is not installed on your phone. Please click yes and install the same. OpenCV manager is a required dependency for this app.</i></li>
+  <li>Gently place your finger on your camera lens and start the app. Once the flashlight turns on you should see a complete red preview on the UI. <i>(If your finger is not correctly placed the app might produce errors)</i></li>
+  <li> Wait till the text colour of the BPM value changes to green </li>
+</ol>
+<i> NOTE : The blue colour values are approximations and might be errorneus. The green colour indicates sufficient samples have been collected thus the vaule is reliable </i>
+
+<b><i> DISCLAIMER : This is just an experimental app and the user should not intend to use it for medical purposes </i></b> 
