@@ -366,7 +366,12 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
                 ArrayList<Mat> img_comp = new ArrayList<Mat>(3);
                 Core.split(myInputFrame, img_comp);
 
+                //Get the red component of the image
+                //Mat myMat = img_comp.get(0);
+                
+                //Trying with the green component instead : Cheking
                 Mat myMat = img_comp.get(0);
+                
 
                 appData.frameAv = getMatAvg(myMat);
 
